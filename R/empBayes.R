@@ -10,6 +10,8 @@
 #' @param depVar The dependent variable (the number of crashes - should always be of class integer or numeric).
 #' @param indepVars Variables used to model the outcome variable depVar
 #' @param offsetVar An offset variable (eg years)
+#' @param forceKeep A character vector of variable names.
+#'  These variables will not be considered for removal during the variable selection process.
 #' @param alpha Level of confidence
 #' @return Returns a list object containing the CMF, its variance, standard error, and 1-alpha/2 CI
 #' @examples
@@ -19,7 +21,11 @@
 #' empBayes(reference = Reference, before = Before, after = After,
 #'  depVar = "kabco", offsetVar = "year")
 
-empBayes <- function(reference, before, after, depVar, offsetVar = NULL, indepVars = setdiff(names(reference), c(depVar, offsetVar)), alpha = 0.95){
+empBayes <- function(reference, before, after,
+                     depVar, offsetVar = NULL, indepVars = setdiff(names(reference), c(depVar, offsetVar)),
+                     forceKeep = NULL,
+                     alpha = 0.95){
+
   # check data compatibility
   stopifnot(is.data.frame(reference))
   stopifnot(is.data.frame(before))
@@ -30,6 +36,8 @@ empBayes <- function(reference, before, after, depVar, offsetVar = NULL, indepVa
   stopifnot(depVar %in% names(reference))
   stopifnot(depVar %in% names(before))
   stopifnot(depVar %in% names(after))
+
+  stopifnot(all(forceKeep %in% indepVars))
 
   stopifnot(all(indepVars %in% names(reference)))
   stopifnot(all(indepVars %in% names(before)))
@@ -42,11 +50,29 @@ empBayes <- function(reference, before, after, depVar, offsetVar = NULL, indepVa
   }
 
   # fit negative binomial model to reference data
-  form <- paste0(depVar, '~', paste(indepVars, collapse='+'))
-  if(!is.null(offsetVar)) form <- paste0(form, ' + offset(', offsetVar, ')')
-  init_mod <- MASS::glm.nb(formula = as.formula(form), data = reference)
+  full_form <- paste0(depVar, '~', paste(indepVars, collapse='+'))
+  if(!is.null(forceKeep)){
+    min_form <- paste0(depVar, '~', paste(forceKeep, collapse='+'))
+  }else{
+    min_form <- NULL
+  }
+
+  if(!is.null(offsetVar)){
+    full_form <- paste0(full_form, ' + offset(', offsetVar, ')')
+    if(!is.null(forceKeep)){
+      min_form <- paste0(min_form, ' + offset(', offsetVar, ')')
+    }
+  }
+
+  if(!is.null(forceKeep)){
+    scope <- list('lower' = as.formula(min_form), 'upper' = as.formula(full_form))
+  }else{
+    scope <- as.formula(full_form)
+  }
+
+  init_mod <- MASS::glm.nb(formula = as.formula(full_form), data = reference)
   # variable selection using stepwise (Dr. Johnson forgive me)
-  step_mod <- MASS::stepAIC(init_mod, trace = FALSE)
+  step_mod <- MASS::stepAIC(init_mod, scope = scope, trace = FALSE, direction='both')
 
   # use reference model to calculate expected values for before and after data
   before$Expected <- predict(step_mod, newdata = before)
