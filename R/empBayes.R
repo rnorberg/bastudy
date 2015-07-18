@@ -1,49 +1,82 @@
-#' @title calcPredVals
-#' @description xxx
+#' @title empBayes
+#' @description Calculates Crash Modification Factor (CMF) for a before/after traffic study using Empirical Bayes to avoid regression to the mean (RTM)
 #' @details None at this time
-#' @aliases fitReferenceModel
+#' @aliases empBayes
 #' @author Jung-han Wang and Robert Norberg
-#' @export fitReferenceModel
-#' @param trtData Treatment data returned from calling calcPredVals()
-#' @param refModel Reference model returned from calling fitReferencModel()
-#' @param BAcol The name of the column indicating before/after. This column should have no missing data and each value should be one of "Before" or "After".
+#' @export empBayes
+#' @param reference Reference data
+#' @param before Treatment data, before some change was made
+#' @param after Treatment data, after some change was made
+#' @param The dependent variable (the number of crashes - should always be of class integer or numeric).
+#' @param indepVars Variables used to model the outcome variable depVar
+#' @param offset An offset variable (eg years)
 #' @param alpha Level of confidence
-#' @return Returns the treatment data frame with an additional column named "Predicted".
+#' @return Returns a list object containing the CMF, its variance, standard error, and 1-alpha/2 CI
 #' @examples
-#' ref_mod <- fitReferenceModel(refData = Reference,
-#'  depVar = "kabco_0312",
-#'  indepVars = c("Max_AADT", "Min_AADT"),
-#'  offset="year")
+#' data(Reference)
+#' data(Before)
+#' data(After)
+#' empBayes(reference = Reference, before = Before, after = After,
+#'  depVar = "kabco", offsetVar = "year")
 
-empBayes <- function(trtData, refModel, BAcol = 'BeforeAfter', alpha = 0.95){
-  # get dependent variable from model object
-  depVar <- grep('~|\\+', as.character(refMod$terms), invert = TRUE, value = TRUE)
+empBayes <- function(reference, before, after, depVar, offsetVar = NULL, indepVars = setdiff(names(reference), c(depVar, offsetVar)), alpha){
+  # check data compatibility
+  stopifnot(is.data.frame(reference))
+  stopifnot(is.data.frame(before))
+  stopifnot(is.data.frame(after))
+
+  stopifnot(nrow(before) == nrow(after))
+
+  stopifnot(depVar %in% names(reference))
+  stopifnot(depVar %in% names(before))
+  stopifnot(depVar %in% names(after))
+
+  stopifnot(all(indepVars %in% names(reference)))
+  stopifnot(all(indepVars %in% names(before)))
+  stopifnot(all(indepVars %in% names(after)))
+
+  if(!is.null(offsetVar)){
+    stopifnot(offsetVar %in% names(reference))
+    stopifnot(offsetVar %in% names(before))
+    stopifnot(offsetVar %in% names(after))
+  }
+
+  # fit negative binomial model to reference data
+  form <- paste0(depVar, '~', paste(indepVars, collapse='+'))
+  if(!is.null(offsetVar)) form <- paste0(form, ' + offset(', offsetVar, ')')
+  init_mod <- MASS::glm.nb(formula = as.formula(form), data = reference)
+  # variable selection using stepwise (Dr. Johnson forgive me)
+  step_mod <- MASS::stepAIC(init_mod, trace = FALSE)
+
+  # use reference model to calculate expected values for before and after data
+  before$Expected <- predict(step_mod, newdata = before)
+  after$Expected <- predict(step_mod, newdata = after)
 
   # treatment # crashes before
-  tb <- sum(trtData[grepl('Before', trtData[, BAcol], ignore.case=T), depVar])
+  tb <- sum(before[, depVar])
   # treatment # crashes after
-  ta <- sum(trtData[grepl('After', trtData[, BAcol], ignore.case=T), depVar])
-  # predicted # crashes before (predicted for Treatment from model fit to Reference)
-  pb <- sum(trtData[grepl('Before', trtData[, BAcol], ignore.case=T), 'Predicted'])
-  # predicted # crashes after (predicted for Treatment from model fit to Reference)
-  pa <- sum(trtData[grepl('After', trtData[, BAcol], ignore.case=T), 'Predicted'])
+  ta <- sum(after[, depVar])
+  # expected # crashes before (calculated using model fit to Reference)
+  pb <- sum(before$Expected)
+  # expected # crashes after (calculated using model fit to Reference)
+  pa <- sum(after$Expected)
 
-  # Overdispersion parameter
-  k <- refMod$theta
+  # overdispersion parameter
+  k <- step_mod$theta
 
-  weight=1/(1+pb*(1/k))
+  weight <- 1/(1+pb*(1/k))
 
-  N_exp_tb<-weight*pb+(1-weight)*tb
-  eb_ratio<-pa/pb
+  N_exp_tb <- weight*pb+(1-weight)*tb
+  eb_ratio <- pa/pb
 
-  N_exp_ta<-N_exp_tb*(eb_ratio)
-  var_N_exp_ta<-N_exp_ta*(eb_ratio)*(1-weight)
+  N_exp_ta <- N_exp_tb*(eb_ratio)
+  var_N_exp_ta <- N_exp_ta*(eb_ratio)*(1-weight)
 
-  lamda<-ta
-  cmf<-(lamda/N_exp_ta)/(1+var_N_exp_ta/var_N_exp_ta**2)
+  lamda <- ta
+  cmf <- (lamda/N_exp_ta)/(1+var_N_exp_ta/var_N_exp_ta**2)
   cmf_var<-cmf**2*((1/N_exp_ta)+(var_N_exp_ta/N_exp_ta**2))/(1+var_N_exp_ta/N_exp_ta**2)**2
 
-  ## Calculate Standard Error of Crash Reduction Index
+  # calculate standard error of crash reduction index
   cmf_se<-sqrt(cmf_var)
 
   if (alpha>0.5) {
@@ -54,15 +87,20 @@ empBayes <- function(trtData, refModel, BAcol = 'BeforeAfter', alpha = 0.95){
     z<-qnorm(alpha)*-1
   }
 
-  z_int<-z*sqrt(cmf_var)
+  z_int <- z*sqrt(cmf_var)
 
-  cmf_lower<-cmf-z_int
-  cmf_upper<-cmf+z_int
+  cmf_lower <- cmf-z_int
+  cmf_upper <- cmf+z_int
 
   if (cmf_lower < 0) {
     cmf_lower = 0
   }
 
-  return(cat('\n',"Sample Size =",nrow(trtData)/2,'\n',
-             "CMF =",cmf,'\n',"CMF Variance =",cmf_var,'\n',"CMF Standard Error =",cmf_se,'\n',"CMF Lower Bound =",cmf_lower,'\n',"CMF Upper Bound =",cmf_upper))
+  return(list(
+    "n" = nrow(before)/2,
+    "cmf" = cmf,
+    "cmf_variance" = cmf_var,
+    "cmf_se" = cmf_se,
+    "cmf_ci" = c('Lower' = cmf_lower,'Upper' = cmf_upper, 'alpha' = alpha)
+    ))
 }
