@@ -2,34 +2,41 @@
 % Please edit documentation in R/empBayes.R
 \name{empBayes}
 \alias{empBayes}
-\alias{fitReferenceModel}
-\title{calcPredVals}
+\title{empBayes}
 \usage{
-empBayes(trtData, refModel, BAcol = "BeforeAfter", alpha = 0.95)
+empBayes(reference, before, after, depVar, offsetVar = NULL,
+  indepVars = setdiff(names(reference), c(depVar, offsetVar)), alpha = 0.95)
 }
 \arguments{
-\item{trtData}{Treatment data returned from calling calcPredVals()}
+\item{reference}{Reference data}
 
-\item{refModel}{Reference model returned from calling fitReferencModel()}
+\item{before}{Treatment data, before some change was made}
 
-\item{BAcol}{The name of the column indicating before/after. This column should have no missing data and each value should be one of "Before" or "After".}
+\item{after}{Treatment data, after some change was made}
+
+\item{depVar}{The dependent variable (the number of crashes - should always be of class integer or numeric).}
+
+\item{offsetVar}{An offset variable (eg years)}
+
+\item{indepVars}{Variables used to model the outcome variable depVar}
 
 \item{alpha}{Level of confidence}
 }
 \value{
-Returns the treatment data frame with an additional column named "Predicted".
+Returns a list object containing the CMF, its variance, standard error, and 1-alpha/2 CI
 }
 \description{
-xxx
+Calculates Crash Modification Factor (CMF) for a before/after traffic study using Empirical Bayes to avoid regression to the mean (RTM)
 }
 \details{
 None at this time
 }
 \examples{
-ref_mod <- fitReferenceModel(refData = Reference,
- depVar = "kabco_0312",
- indepVars = c("Max_AADT", "Min_AADT"),
- offset="year")
+data(Reference)
+data(Before)
+data(After)
+empBayes(reference = Reference, before = Before, after = After,
+ depVar = "kabco", offsetVar = "year")
 }
 \author{
 Jung-han Wang and Robert Norberg

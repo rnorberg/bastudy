@@ -7,9 +7,9 @@
 #' @param reference Reference data
 #' @param before Treatment data, before some change was made
 #' @param after Treatment data, after some change was made
-#' @param The dependent variable (the number of crashes - should always be of class integer or numeric).
+#' @param depVar The dependent variable (the number of crashes - should always be of class integer or numeric).
 #' @param indepVars Variables used to model the outcome variable depVar
-#' @param offset An offset variable (eg years)
+#' @param offsetVar An offset variable (eg years)
 #' @param alpha Level of confidence
 #' @return Returns a list object containing the CMF, its variance, standard error, and 1-alpha/2 CI
 #' @examples
@@ -19,7 +19,7 @@
 #' empBayes(reference = Reference, before = Before, after = After,
 #'  depVar = "kabco", offsetVar = "year")
 
-empBayes <- function(reference, before, after, depVar, offsetVar = NULL, indepVars = setdiff(names(reference), c(depVar, offsetVar)), alpha){
+empBayes <- function(reference, before, after, depVar, offsetVar = NULL, indepVars = setdiff(names(reference), c(depVar, offsetVar)), alpha = 0.95){
   # check data compatibility
   stopifnot(is.data.frame(reference))
   stopifnot(is.data.frame(before))
