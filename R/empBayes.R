@@ -31,8 +31,6 @@ empBayes <- function(reference, before, after,
   stopifnot(is.data.frame(before))
   stopifnot(is.data.frame(after))
 
-  stopifnot(nrow(before) == nrow(after))
-
   stopifnot(depVar %in% names(reference))
   stopifnot(depVar %in% names(before))
   stopifnot(depVar %in% names(after))
@@ -127,7 +125,7 @@ empBayes <- function(reference, before, after,
   }
 
   return(list(
-    "n" = nrow(before)/2,
+    "n" = c('before' = nrow(before), 'after' = nrow(after)),
     "cmf" = cmf,
     "cmf_variance" = cmf_var,
     "cmf_se" = cmf_se,

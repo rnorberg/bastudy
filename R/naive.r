@@ -21,8 +21,6 @@ naive<-function(before, after, depVar, db=1,da=1, alpha = 0.95){
   stopifnot(is.data.frame(before))
   stopifnot(is.data.frame(after))
 
-  stopifnot(nrow(before) == nrow(after))
-
   stopifnot(depVar %in% names(before))
   stopifnot(depVar %in% names(after))
 
@@ -78,7 +76,7 @@ naive<-function(before, after, depVar, db=1,da=1, alpha = 0.95){
 
 
 return(list(
-  "n" = nrow(before)/2,
+  "n" = c('before' = nrow(before), 'after' = nrow(after)),
   "cmf" = cmf,
   "cmf_variance" = cmf_var,
   "cmf_se" = cmf_se,
