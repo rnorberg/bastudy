@@ -8,5 +8,5 @@ Maintainer: junghanwang@gmail.com
 Description: Hank plz fill this in.
 License: GPL > 3.0
 LazyData: TRUE
-Depends:
-  glmnb
+Imports:
+  MASS
