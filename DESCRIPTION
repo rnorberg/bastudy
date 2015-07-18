@@ -1,10 +1,12 @@
 Package: bastudy
 Type: Package
-Title: What the Package Does (Title Case)
+Title: A package to make before and after studies easy.
 Version: 0.1
 Date: 2015-07-18
-Author: Who wrote it
-Maintainer: Who to complain to <yourfault@somewhere.net>
-Description: More about what it does (maybe more than one line)
-License: What license is it under?
+Author: Jung-han Wang and Robert Norberg
+Maintainer: junghanwang@gmail.com
+Description: Hank plz fill this in.
+License: GPL > 3.0
 LazyData: TRUE
+Depends:
+  glmnb
