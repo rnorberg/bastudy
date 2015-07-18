@@ -1,21 +1,21 @@
-#' @title Naive
+#' @title naive
 #' @description Calculates Crash Modification Factor (CMF) for a before/after traffic study using Naive method
 #' @details None at this time
-#' @aliases Naive
+#' @aliases naive
 #' @author Jung-han Wang and Robert Norberg
-#' @export Naive
+#' @export naive
 #' @param before Treatment data, before some change was made
 #' @param after Treatment data, after some change was made
-#' @param length of time unit in before period
-#' @param length of time unit in after period
+#' @param db duration of before period (typically years)
+#' @param da duration of after period (typically years)
 #' @param alpha Level of confidence
 #' @return Returns a list object containing the CMF, its variance, standard error, and 1-alpha/2 CI
 #' @examples
 #' data(Before)
 #' data(After)
-#' naive(before = Before, after = After,depVar = "kabco",db=1,da=3,alpha=0.9)
+#' naive(before = Before, after = After, depVar = "kabco", db = 1, da = 3, alpha = 0.9)
 
-naive<-function(before, after, depVar, db=1,da=1, alpha = 0.95){
+naive <- function(before, after, depVar, db=1, da=1, alpha = 0.95){
 
   # check data compatibility
   stopifnot(is.data.frame(before))
@@ -63,17 +63,6 @@ naive<-function(before, after, depVar, db=1,da=1, alpha = 0.95){
   if (cmf_lower < 0) {
     cmf_lower = 0
   }
-
-  CMF <- list('est'=cmf,
-              'varince'=cmf_var,
-              'stderr'=cmf_se,
-              'confint'=list('lower' = cmf_lower, 'upper' = cmf_upper)
-  )
-  results <- list('SampleSize'=length(tb),
-                  'CMF' = CMF
-  )
-
-
 
 return(list(
   "n" = c('before' = nrow(before), 'after' = nrow(after)),
