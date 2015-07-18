@@ -5,7 +5,9 @@ Version: 0.1
 Date: 2015-07-18
 Author: Jung-han Wang and Robert Norberg
 Maintainer: junghanwang@gmail.com
-Description: Hank plz fill this in.
+Description: This package calculate the modification factor using Empirical
+Bayesian method. It weight the expected outcome based on observed value and
+fitted value from negative binomial model by glm.nb
 License: GPL > 3.0
 LazyData: TRUE
 Imports:
