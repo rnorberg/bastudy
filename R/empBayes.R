@@ -49,6 +49,10 @@ empBayes <- function(reference, before, after,
     stopifnot(offsetVar %in% names(after))
   }
 
+  stopifnot(is.numeric(reference[, depVar]))
+  stopifnot(is.numeric(before[, depVar]))
+  stopifnot(is.numeric(after[, depVar]))
+
   # fit negative binomial model to reference data
   full_form <- paste0(depVar, '~', paste(indepVars, collapse='+'))
   if(!is.null(forceKeep)){
