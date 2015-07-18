@@ -5,7 +5,8 @@
 \title{empBayes}
 \usage{
 empBayes(reference, before, after, depVar, offsetVar = NULL,
-  indepVars = setdiff(names(reference), c(depVar, offsetVar)), alpha = 0.95)
+  indepVars = setdiff(names(reference), c(depVar, offsetVar)),
+  forceKeep = NULL, alpha = 0.95)
 }
 \arguments{
 \item{reference}{Reference data}
@@ -19,6 +20,9 @@ empBayes(reference, before, after, depVar, offsetVar = NULL,
 \item{offsetVar}{An offset variable (eg years)}
 
 \item{indepVars}{Variables used to model the outcome variable depVar}
+
+\item{forceKeep}{A character vector of variable names.
+These variables will not be considered for removal during the variable selection process.}
 
 \item{alpha}{Level of confidence}
 }

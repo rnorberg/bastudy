@@ -6,6 +6,7 @@
 #' @export naive
 #' @param before Treatment data, before some change was made
 #' @param after Treatment data, after some change was made
+#' @param depVar The dependent variable (the number of crashes - should always be of class integer or numeric).
 #' @param db duration of before period (typically years)
 #' @param da duration of after period (typically years)
 #' @param alpha Level of confidence

@@ -5,9 +5,7 @@ Version: 0.1
 Date: 2015-07-18
 Author: Jung-han Wang and Robert Norberg
 Maintainer: Jung-han Wang <junghanwang@gmail.com>
-Description: Calculates the modification factor using Empirical
-  Bayes method. It weight the expected outcome based on observed value and
-  fitted value from negative binomial model by glm.nb
+Description: Calculates the modification factor for before/after studies using several statistical methods.
 License: GPL (>= 2)
 LazyData: TRUE
 Depends:
