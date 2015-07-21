@@ -4,11 +4,9 @@
 #' @aliases bagui
 #' @author Jung-han Wang and Robert Norberg
 #' @export bagui
-#' @examples
-#' bagui()
 
 bagui <- function() {
-  appDir <- system.file("examples", "bastudy", package = "bastudy")
+  appDir <- system.file("examples", "gui", package = "bastudy")
   if (appDir == "") {
     stop("Could not find example directory. Try re-installing `bastudy`.", call. = FALSE)
   }
