@@ -45,21 +45,59 @@ shinyUI(fluidPage(
   fluidRow(
     h4("Specify dependent, independent, and offset variables"),
     column(3,
+           wellPanel(
              uiOutput("selectDepVar")
+           )
     ),
-    column(3,
-             uiOutput("selectOffestVar")
-    ),
-    column(3,
-             uiOutput("selectIndepVars")
+    column(9,
+           conditionalPanel(condition = "input.analType == 'Naive'",
+                            column(4,
+                                   wellPanel(
+                                     numericInput('bef_duration', "Duration of Before Period", value = 1, min = 1, max = NA)
+                                   )
+                            ),
+                            column(4,
+                                   wellPanel(
+                                     numericInput('af_duration', "Duration of After Period", value = 1, min = 1, max = NA)
+                                   )
+                            )
+           ),
+           conditionalPanel(condition = "input.analType == 'Empirical Bayes'",
+                            column(4,
+                                   wellPanel(
+                                     uiOutput("selectOffestVar")
+                                   )
+                            ),
+                            column(4,
+                                   wellPanel(
+                                     uiOutput("selectIndepVars")
+                                   )
+                            ),
+                            column(4,
+                                   wellPanel(
+                                     uiOutput("selectKeepVars")
+                                   )
+                            )
+           )
     )
   ),
+
   fluidRow(
     column(3,
            wellPanel(
-             uiOutput("selectKeepVars"),
              sliderInput('conf_lev', "Select Confidence Level",
-                         min = 0, max = 1, value = 0.95, step = 0.01)
-           ))
+                         min = 0.5, max = 1, value = 0.95, step = 0.01)
+           )
+    ),
+    column(3,
+           wellPanel(
+             actionButton("goButton", "Calculate CMF")
+           )
+    ),
+    column(6,
+           wellPanel(
+             verbatimTextOutput('Results')
+           )
+    )
   )
 ))
