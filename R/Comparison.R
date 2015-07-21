@@ -4,7 +4,7 @@
 #' @aliases CompGroup
 #' @author Jung-han Wang and Robert Norberg
 #' @export CompGroup
-#' @param compBefore Comparison data in after period
+#' @param compBefore Comparison data in before period
 #' @param compAfter Comparison data in after period
 #' @param before Treatment data, before some change was made
 #' @param after Treatment data, after some change was made
@@ -12,11 +12,11 @@
 #' @param alpha Level of confidence
 #' @return Returns a list object containing the CMF, its variance, standard error, and 1-alpha/2 CI
 #' @examples
-#' data(CompBefore)
-#' data(CompAfter)
+#' data(compBefore)
+#' data(compAfter)
 #' data(Before)
 #' data(After)
-#' CompGroup(compBefore = compBefore, compAfter = compAfter, before = before, after = After,
+#' CompGroup(compBefore = compBefore, compAfter = compAfter, before = Before, after = After,
 #'  depVar = "kabco")
 
 CompGroup<-function(compBefore,compAfter, before, after, depVar, alpha = 0.95){
