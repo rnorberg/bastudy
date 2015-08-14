@@ -1,1 +1,7 @@
-Basic description of package goes here.
+This package offers 3 algorithms for calculating crash modification factors also known as CMFs or AMFs.
+
+All 3 methods are provided with graphical user interface (GUI) using "Shiny".
+
+This packages is developed by Jung-Han Wang and Robert Norberg.
+
+Current release: bastudy version 0.1 beta
