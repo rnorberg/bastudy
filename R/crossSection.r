@@ -10,6 +10,7 @@
 #' @param offsetVar An offset variable (eg years)
 #' @param forceKeep A character vector of variable names.
 #'  These variables will not be considered for removal during the variable selection process.
+#' @param target A binary variable with 0 and 1. (0=does not exist, 1=exist)
 #' @param alpha Level of confidence
 #' @return Returns a list object containing the CMF, its variance, standard error, 1-alpha/2 CI, and negative binomial model
 #' @examples
