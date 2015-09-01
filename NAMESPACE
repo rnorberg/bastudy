@@ -2,5 +2,6 @@
 
 export(CompGroup)
 export(bagui)
+export(crossSection)
 export(empBayes)
 export(naive)
