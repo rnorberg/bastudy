@@ -15,13 +15,12 @@
 #' @return Returns a list object containing the CMF, its variance, standard error, 1-alpha/2 CI, and negative binomial model
 #' @examples
 #' data(Reference)
-#' empBayes(reference = Reference, depVar = "kabco", offsetVar = "year",target="LTL")
+#' crossSection(reference = Reference, depVar = "kabco", offsetVar = "year", target="LTL")
 
-crossSection<-function(reference,depVar, offsetVar = NULL,
-                       indepVars =setdiff(names(data),
+crossSection <- function(reference, depVar, offsetVar = NULL,
+                       indepVars = setdiff(names(reference),
                                           c(depVar, offsetVar)),
-                       forceKeep = NULL,target=NULL,
-                       alpha=0.95){
+                       forceKeep = NULL, target = NULL, alpha = 0.95){
   # check data compatibility
   stopifnot(is.data.frame(reference))
 
@@ -29,11 +28,13 @@ crossSection<-function(reference,depVar, offsetVar = NULL,
 
   stopifnot(all(forceKeep %in% indepVars))
 
+  stopifnot(all(target %in% indepVars))
+
   stopifnot(all(indepVars %in% names(reference)))
 
   if(!is.null(offsetVar)){
     stopifnot(offsetVar %in% names(reference))
-    }
+  }
 
   stopifnot(is.numeric(reference[, depVar]))
 
@@ -58,61 +59,56 @@ crossSection<-function(reference,depVar, offsetVar = NULL,
     scope <- as.formula(full_form)
   }
 
-  init_mod <- MASS::glm.nb(formula = as.formula(full_form), data =
-                             data)
+  init_mod <- MASS::glm.nb(formula = as.formula(full_form), data = reference)
 
   # variable selection using stepwise
-  step_mod <- MASS::stepAIC(init_mod, scope = scope, trace = FALSE,
-                            direction='both')
-
-
-
-
+  step_mod <- MASS::stepAIC(init_mod, scope = scope, trace = FALSE, direction='both')
 
   # Get the spot for target variable
-  coefSpot<-which(names(step_mod$coefficients)==target)
-  targetCoef<-step_mod$coefficients[coefSpot]
+  coefSpot <- which(names(step_mod$coefficients) == target)
+  targetCoef <- step_mod$coefficients[coefSpot]
 
   # Locate Standard Error
-  stdErr<-summary(step_mod)$coef[,2]
-  stdSpot<-which(names(stdErr)==target)
-  targetStdErr<-stdErr[stdSpot]
+  stdErr <- summary(step_mod)$coef[,2 ]
+  stdSpot <- which(names(stdErr) == target)
+  targetStdErr <- stdErr[stdSpot]
 
   #Calculate mean CMF
-  cmf<-exp(targetCoef)
+  cmf <- exp(targetCoef)
 
   #Calculate standard error of CMF
-  cmf_se<-(exp(targetCoef+targetStdErr)-exp(targetCoef-targetStdErr))/2
+  cmf_se <- (exp(targetCoef + targetStdErr) - exp(targetCoef - targetStdErr))/2
 
-  if (alpha>0.5) {
-    alpha<-(1-alpha)/2
-    z<-qnorm(alpha)*-1
-  }else {
-    alpha<-alpha/2
-    z<-qnorm(alpha)*-1
+  if (alpha > 0.5) {
+    alpha <- (1 - alpha)/2
+    z <- qnorm(alpha) * (-1)
+  }else{
+    alpha <- alpha/2
+    z <- qnorm(alpha) * (-1)
   }
 
-  z_int <- z*cmf_se
+  z_int <- z * cmf_se
 
   cmf_lower <- cmf-z_int
   cmf_upper <- cmf+z_int
 
-  if (cmf_lower <0 ){
-    cmf_lower=0
+  if (cmf_lower < 0){
+    cmf_lower <- 0
   }
 
+  pval <- summary(step_mod)$coef[,4]
+  pvalSpot < -which(names(pval) == target)
+  targetPval <- pval[pvalSpot]
 
-  pval<-summary(step_mod)$coef[,4]
-  pvalSpot<-which(names(pval)==target)
-  targetPval<-pval[pvalSpot]
-
-  if (targetPval>0.10){
-    significance="Target variable is not significant at 90% level"
-  } else{significance="Target variable is significant at 90% level"}
+  if (targetPval > 0.10){
+    significance <- "Target variable is not significant at 90% level"
+  }else{
+    significance <- "Target variable is significant at 90% level"
+    }
 
   return(list(
     "n" = nrow(data),
-    "targetSig"=significance,
+    "targetSig" = significance,
     "cmf" = cmf,
     "cmf_se" = cmf_se,
     "cmf_ci" = c('Lower' = cmf_lower,'Upper' = cmf_upper,
