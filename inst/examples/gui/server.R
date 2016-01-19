@@ -22,10 +22,11 @@ shinyServer(function(input, output, clientData, session) {
 
     wellPanel(
       selectInput('offsetVarinput', label = 'Select Offset Variable:',
-                  choices = intersect(
+                  choices = c('None',
+                              intersect(
                     names(read.csv(input$before_trt$datapath, header=T, stringsAsFactors = F)),
                     names(read.csv(input$after_trt$datapath, header=T, stringsAsFactors = F))
-                  )
+                  ))
       )
     )
   })
@@ -77,7 +78,7 @@ shinyServer(function(input, output, clientData, session) {
         before = read.csv(input$before_trt$datapath, header=T, stringsAsFactors = F),
         after = read.csv(input$after_trt$datapath, header=T, stringsAsFactors = F),
         depVar = input$depVarinput,
-        offsetVar = input$offsetVarinput,
+        offsetVar = (if(input$offsetVarinput!='None') input$offsetVarinput),
         indepVars = input$indepVarsinput,
         forceKeep = input$keepVarsinput,
         alpha = input$conf_lev)
