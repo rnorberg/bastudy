@@ -6,21 +6,21 @@
 #' @export crossSection
 #' @param reference Reference data
 #' @param depVar The dependent variable (the number of crashes - should always be of class integer or numeric).
+#' @param target A binary variable with 0 and 1. (0=does not exist, 1=exist)
 #' @param indepVars Variables used to model the outcome variable depVar
 #' @param offsetVar An offset variable (eg years)
 #' @param forceKeep A character vector of variable names.
 #'  These variables will not be considered for removal during the variable selection process.
-#' @param target A binary variable with 0 and 1. (0=does not exist, 1=exist)
 #' @param alpha Level of confidence
 #' @return Returns a list object containing the CMF, its variance, standard error, 1-alpha/2 CI, and negative binomial model
 #' @examples
 #' data(Reference)
 #' crossSection(reference = Reference, depVar = "kabco", offsetVar = "year", target="LTL")
 
-crossSection <- function(reference, depVar, offsetVar = NULL,
+crossSection <- function(reference, depVar, target, offsetVar = NULL,
                        indepVars = setdiff(names(reference),
                                           c(depVar, offsetVar)),
-                       forceKeep = NULL, target = NULL, alpha = 0.95){
+                       forceKeep = NULL, alpha = 0.95){
   # check data compatibility
   stopifnot(is.data.frame(reference))
 
